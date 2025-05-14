@@ -8,7 +8,7 @@ import dill
 import math
 import time
 import wandb.sdk.data_types.video as wv
-from diffusion_policy.env.memory.memory_env_v4 import MemoryEnv_v4
+from diffusion_policy.env.memory.memory_env import MemoryEnv
 from diffusion_policy.gym_util.async_vector_env import AsyncVectorEnv
 # from diffusion_policy.gym_util.sync_vector_env import SyncVectorEnv
 from diffusion_policy.gym_util.multistep_wrapper import MultiStepWrapper
@@ -38,8 +38,7 @@ class MemoryEnvRunner(BaseLowdimRunner):
             past_action=False,
             tqdm_interval_sec=5.0,
             n_envs=None,
-            goal_masking_timestep=20,
-            include_goal_flag=False
+            goal_masking_timestep=20
         ):
         super().__init__(output_dir)
 
@@ -58,10 +57,9 @@ class MemoryEnvRunner(BaseLowdimRunner):
         def env_fn():
             return MultiStepWrapper(
                 VideoRecordingWrapper(
-                    MemoryEnv_v4(
+                    MemoryEnv(
                         legacy=legacy_test,
-                        goal_masking_timestep=goal_masking_timestep,
-                        include_goal_flag=include_goal_flag
+                        goal_masking_timestep=goal_masking_timestep
                     ),
                     video_recoder=VideoRecorder.create_h264(
                         fps=fps,
@@ -156,7 +154,6 @@ class MemoryEnvRunner(BaseLowdimRunner):
         self.max_steps = max_steps
         self.tqdm_interval_sec = tqdm_interval_sec
         self.goal_masking_timestep = goal_masking_timestep
-        self.include_goal_flag = include_goal_flag
     
     def run(self, policy: BaseLowdimPolicy):
         device = policy.device

@@ -1,0 +1,29 @@
+All datasets are created using the demo scripts. All datasets have 100 demonstrations each.
+
+Datasets:
+- coridor_baseline
+- coridor_20
+- pusht_memory_baseline
+- pusht_memory_fixed_block_20
+- pusht_memory_20
+
+
+Runs:
+Run 232 dataset memory/coridor_20. dp unet ddim. horizon= 16. n_obs_steps=2. action=8. Score:0.54
+
+Run 233 dataset memory/coridor_20. sdp unet ddim. horizon= 16. n_obs_steps=2. action=8. Score:0.
+
+Run 234 dataset memory/coridor_20. dp unet ddim. horizon= 32. n_obs_steps=2. action=8. Score:0.
+
+Run 235 dataset memory/coridor_20. sdp unet ddim. horizon= 32. n_obs_steps=2. action=8. Score:0.
+
+Run 236 dataset memory/coridor_20. dp unet ddim. horizon= 48. n_obs_steps=2. action=8. Score:0.
+
+Run 237 dataset memory/coridor_20. sdp unet ddim. horizon= 48. n_obs_steps=2. action=8. Score:0.
+
+Run 238 dataset memory/coridor_baseline. dp unet ddim. horizon= 16. n_obs_steps=2. action=8. Score:0.
+
+Run 239 dataset memory/coridor_baseline. sdp unet ddim. horizon= 16. n_obs_steps=2. action=8. Score:0.
+
+Visualiser disse!!
+

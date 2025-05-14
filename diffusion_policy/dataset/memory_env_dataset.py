@@ -19,8 +19,7 @@ class MemoryLowdimDataset(BaseLowdimDataset):
             action_key='action',
             seed=42,
             val_ratio=0.0,
-            max_train_episodes=None,
-            remove_goal_flag=False
+            max_train_episodes=None
             ):
         super().__init__()
         self.replay_buffer = ReplayBuffer.copy_from_path(
@@ -49,7 +48,6 @@ class MemoryLowdimDataset(BaseLowdimDataset):
         self.horizon = horizon
         self.pad_before = pad_before
         self.pad_after = pad_after
-        self.remove_goal_flag = remove_goal_flag
 
     def get_validation_dataset(self):
         val_set = copy.copy(self)
@@ -77,11 +75,7 @@ class MemoryLowdimDataset(BaseLowdimDataset):
 
     def _sample_to_data(self, sample):
         state = sample[self.state_key]
-        # Obs = state = [agent_pos_x, agent_pos_y, goal_pos_x, goal_pos_y, goal_flag]
-        if self.remove_goal_flag:    
-            obs = state[:,:-1]
-        else:
-            obs = state
+        obs = state
         data = {
             'obs': obs, # T, D_o
             'action': sample[self.action_key], # T, D_a

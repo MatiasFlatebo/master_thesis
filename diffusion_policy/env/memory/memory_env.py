@@ -34,7 +34,8 @@ class MemoryEnv(gym.Env):
             block_cog=None, damping=None,
             render_action=True,
             render_size=96,
-            reset_to_state=None
+            reset_to_state=None,
+            goal_masking_timestep=20
         ):
         self._seed = None
         self.seed()
@@ -83,7 +84,8 @@ class MemoryEnv(gym.Env):
         self.render_buffer = None
         self.latest_action = None
         self.reset_to_state = reset_to_state
-        self.possible_goal_poses = np.array([[400,200], [112,200]])
+        self.goal_masking_timestep = goal_masking_timestep
+        self.possible_goal_poses = np.array([[462,50], [50,50]])
     
     def reset(self):
         seed = self._seed
@@ -126,7 +128,7 @@ class MemoryEnv(gym.Env):
         info = self._get_info()
 
         # Check if goal_pos info should be hidden
-        if self.time_step == 20:
+        if self.time_step == self.goal_masking_timestep:
             self.hide_goal = True
 
         # Iterate time-step
@@ -298,8 +300,9 @@ class MemoryEnv(gym.Env):
             self._add_segment((5, 5), (506, 5), 2),
             self._add_segment((506, 5), (506, 506), 2),
             self._add_segment((5, 506), (506, 506), 2),
-            self._add_segment((206,450), (206,256),2),
-            self._add_segment((306,450), (306,256),2)
+            
+            self._add_segment((231,500), (231,100),2),
+            self._add_segment((281,500), (281,100),2)
         ]
         self.space.add(*walls)
 
