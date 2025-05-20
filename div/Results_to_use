@@ -39,7 +39,7 @@ Run 242 dataset memory/corridor_20. dp unet ddim. horizon= 40. n_obs_steps=2. ac
 Run 243 dataset memory/corridor_20. dp unet ddim. horizon= 48. n_obs_steps=2. action=8. Score:0.60
 
 
-### Kjøre disse med action=1 ??? Visualisering blir helt fucked med action=8 ###
+### Kjøre disse med action=1 ??? Visualisering blir helt fucked med action=8###
 
 Run 244 dataset memory/corridor_20. sdp unet ddim. horizon= 24. n_obs_steps=2. action=1. Score:1.0
 
@@ -49,6 +49,23 @@ Run 245 dataset memory/corridor_20. sdp unet ddim. horizon= 32. n_obs_steps=2. a
 Run 246 dataset memory/corridor_20. sdp unet ddim. horizon= 48. n_obs_steps=2. action=8. Score:1.0
 
 Run 247 dataset memory/corridor_20. sdp unet ddim. horizon= 48. n_obs_steps=2. action=8. Score:1.0
+
+
+
+Run 248 dataset pusht_memory_fixed_block_baseline. dp unet ddim. horizon= 16. n_obs_steps=2. action=4. Score:0.97
+Ut ifra 10 rollouts:
+- 6 som får 1 og terminerer
+- 1 hvor den går mot riktig men blir stuck og får 0.0
+- 3 går mot riktig men kommer aldri helt i mål 0.97
+
+Run 249 dataset pusht_memory_fixed_block_baseline. sdp unet ddim. horizon= 16. n_obs_steps=2. action=4. Score:0.97
+Ut ifra 10 rollouts:
+- 5 som får 1 og terminerer
+- 1 hvor den ikke går noen vei og blir stuck og får 0.0
+- 4 går mot riktig men kommer aldri helt i mål over 0.9
+
+
+
 
 
 Spørsmål:

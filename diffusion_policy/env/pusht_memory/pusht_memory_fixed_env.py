@@ -25,7 +25,7 @@ def pymunk_to_shapely(body, shapes):
     geom = sg.MultiPolygon(geoms)
     return geom
 
-class PushTMemoryEnv_v2(gym.Env):
+class PushTMemoryEnvFixed(gym.Env):
     metadata = {"render.modes": ["human", "rgb_array"], "video.frames_per_second": 10}
     reward_range = (0., 1.)
 
@@ -35,7 +35,7 @@ class PushTMemoryEnv_v2(gym.Env):
             render_action=True,
             render_size=96,
             reset_to_state=None,
-            goal_masking_timestep=5
+            goal_masking_timestep=1000
 
         ):
         self._seed = None
@@ -110,7 +110,7 @@ class PushTMemoryEnv_v2(gym.Env):
         state = self.reset_to_state
         if state is None:
             rs = np.random.RandomState(seed=seed)
-            state = np.array([rs.randint(50, 450), rs.randint(50, 450), # Bytter til random. Agent pos var 256,50
+            state = np.array([rs.randint(10, 502), rs.randint(10, 502), # Bytter til random. Agent pos var 256,50
                               256,256,0])
         self._set_state(state)
 
@@ -232,7 +232,7 @@ class PushTMemoryEnv_v2(gym.Env):
             if i == self.chosen_goal_idx and self.time_step < self.goal_masking_timestep:
                 color = pygame.Color("LightGreen")  # Chosen goal flashes
             else:
-                color = pygame.Color("LightGray")   # Otherwise green
+                color = pygame.Color("LightGray")   # Otherwise gray
 
             # Draw the "T" shape for each possible goal
             for shape in self.block.shapes:

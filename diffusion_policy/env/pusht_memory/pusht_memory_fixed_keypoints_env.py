@@ -1,10 +1,10 @@
 from typing import Dict, Sequence, Union, Optional
 from gym import spaces
-from diffusion_policy.env.pusht_memory.pusht_memory_fixed_env import PushTMemoryEnv_v2
+from diffusion_policy.env.pusht_memory.pusht_memory_fixed_env import PushTMemoryEnvFixed
 from diffusion_policy.env.pusht_memory.pymunk_keypoint_manager import PymunkKeypointManager
 import numpy as np
 
-class PushTMemoryKeypointsEnv_v2(PushTMemoryEnv_v2):
+class PushTMemoryFixedKeypointsEnv(PushTMemoryEnvFixed):
     def __init__(self,
             legacy=False,
             block_cog=None, 
@@ -73,7 +73,7 @@ class PushTMemoryKeypointsEnv_v2(PushTMemoryEnv_v2):
 
     @classmethod
     def genenerate_keypoint_manager_params(cls):
-        env = PushTMemoryEnv_v2()
+        env = PushTMemoryEnvFixed()
         kp_manager = PymunkKeypointManager.create_from_pusht_env(env)
         kp_kwargs = kp_manager.kwargs
         return kp_kwargs
