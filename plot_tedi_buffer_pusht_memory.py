@@ -326,13 +326,14 @@ if __name__ == "__main__":
 
     # limit enviornment interaction to 200 steps before termination
     max_steps = 300
-    env = PushTKeypointsEnvVisualizeBuffer(render_size=768)
-    env.set_buffer_color("robin_egg_blue")
-    env.set_path_color("slate_blue")  # Default color for the path
+    
     # use a seed >200 to avoid initial states seen in the training dataset
 
     seeds = [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010]
     for seed in seeds:
+        env = PushTKeypointsEnvVisualizeBuffer(render_size=768)
+        env.set_buffer_color("robin_egg_blue")
+        env.set_path_color("slate_blue")  # Default color for the path
         env.seed(seed)
 
         # get first observation

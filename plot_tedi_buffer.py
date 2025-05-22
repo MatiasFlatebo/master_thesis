@@ -149,10 +149,10 @@ if __name__ == "__main__":
     
     # 1. Load policy
     #checkpoint = "data/outputs/2025.05.16/07.50.19_train_diffusion_unet_ddim_memory_lowdim_memory_lowdim/checkpoints/epoch=0250-test_mean_score=0.600.ckpt"
-    checkpoint = "data/outputs/2025.05.20/11.13.51_train_tedi_ddim_unet_memory_lowdim_memory_lowdim/checkpoints/epoch=0400-test_mean_score=0.980.ckpt"
+    checkpoint = "data/outputs/2025.05.16/07.50.19_train_diffusion_unet_ddim_memory_lowdim_memory_lowdim/checkpoints/epoch=0250-test_mean_score=0.600.ckpt"
 
-    vis_policy = TEDiVisualizeBufferPolicy(checkpoint)
-    #vis_policy = DiffusionVisualizeBufferPolicy(checkpoint)
+    #vis_policy = TEDiVisualizeBufferPolicy(checkpoint)
+    vis_policy = DiffusionVisualizeBufferPolicy(checkpoint)
     device = torch.device("cuda:0")
     vis_policy.to(device)
     vis_policy.eval()
@@ -165,92 +165,91 @@ if __name__ == "__main__":
     env.set_path_color("slate_blue")
     # use a seed >200 to avoid initial states seen in the training dataset
 
-    seeds = [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010]
-    for seed in seeds:
-        env.seed(seed)
+    seed = 100005
+    env.seed(seed)
 
-        # get first observation
-        obs = env.reset()
+    # get first observation
+    obs = env.reset()
 
-        # Create the legend (you might need to adjust these based on the expected range)
-        #legend_image = env.create_legend(0, 99)  # Update min and max values based on your application
+    # Create the legend (you might need to adjust these based on the expected range)
+    #legend_image = env.create_legend(0, 99)  # Update min and max values based on your application
 
-        #legend_image = cv2.imread('legend.png', cv2.IMREAD_COLOR)
+    #legend_image = cv2.imread('legend.png', cv2.IMREAD_COLOR)
 
-        # keep a queue of last 2 steps of observations
-        obs_deque = collections.deque(
-                [obs] * obs_horizon, maxlen=obs_horizon)
-        # save visualization and rewards
-        imgs = []
-        rewards = list()
-        done = False
-        step_idx = 0
+    # keep a queue of last 2 steps of observations
+    obs_deque = collections.deque(
+            [obs] * obs_horizon, maxlen=obs_horizon)
+    # save visualization and rewards
+    imgs = []
+    rewards = list()
+    done = False
+    step_idx = 0
 
-        with tqdm(total=max_steps, desc="EvalMemoryEnv") as pbar:
-            while not done:
-                marker_path = [env.agent.position]
-                B = 1
-                # stack the last obs_horizon (2) number of observations
-                obs_dict = {
-                    "obs": torch.from_numpy(np.stack(obs_deque, axis=0)).to(device, dtype=torch.float32).unsqueeze(0),
-                }
-                action, img_frames = vis_policy.predict_action(obs_dict, env)
-                imgs.extend(img_frames)
-                buffer = action['action_pred'].detach().to('cpu').numpy()[0]
-                env.buffer = buffer
+    with tqdm(total=max_steps, desc="EvalMemoryEnv") as pbar:
+        while not done:
+            marker_path = [env.agent.position]
+            B = 1
+            # stack the last obs_horizon (2) number of observations
+            obs_dict = {
+                "obs": torch.from_numpy(np.stack(obs_deque, axis=0)).to(device, dtype=torch.float32).unsqueeze(0),
+            }
+            action, img_frames = vis_policy.predict_action(obs_dict, env)
+            imgs.extend(img_frames)
+            buffer = action['action_pred'].detach().to('cpu').numpy()[0]
+            env.buffer = buffer
 
-                action = action['action'].detach().to('cpu').numpy()[0]
-                #Sleep a tiny bit so that we can see the prediciton
-                #time.sleep(0.1)
+            action = action['action'].detach().to('cpu').numpy()[0]
+            #Sleep a tiny bit so that we can see the prediciton
+            #time.sleep(0.1)
 
-                # Before moving, plot the current plan
-                # Remove first (obs) action from buffer
+            # Before moving, plot the current plan
+            # Remove first (obs) action from buffer
+            env.buffer = env.buffer[1:]
+            imgs.append(env.render(mode='rgb_array'))
+
+            
+
+            # execute action_horizon number of steps
+            # without replanning
+            for i in range(len(action)):
+                # stepping env
+                obs, reward, done, info = env.step(action[i])
+                # save observations
+                obs_deque.append(obs)
+                # and reward/vis
+                rewards.append(reward)
+                
+                ## Render
+                # Remove the leftmost action from the env buffer
+                marker_path.append(env.agent.position)
                 env.buffer = env.buffer[1:]
-                imgs.append(env.render(mode='rgb_array'))
+                frame = env.render(mode='rgb_array')
+                frame = env.draw_buffer(frame, np.array(marker_path))
+                imgs.append(frame)
 
-                
+                # update progress bar
+                step_idx += 1
+                pbar.update(1)
+                pbar.set_postfix(reward=reward)
+                if step_idx > max_steps:
+                    done = True
+                if done:
+                    break
+            
+            # Plot the path
+            img = env.render(mode='rgb_array')
+            img = env.draw_buffer(img, np.array(marker_path))
+            imgs.append(img)
+            print(f"Len of marker path: {len(marker_path)}")
 
-                # execute action_horizon number of steps
-                # without replanning
-                for i in range(len(action)):
-                    # stepping env
-                    obs, reward, done, info = env.step(action[i])
-                    # save observations
-                    obs_deque.append(obs)
-                    # and reward/vis
-                    rewards.append(reward)
-                    
-                    ## Render
-                    # Remove the leftmost action from the env buffer
-                    marker_path.append(env.agent.position)
-                    env.buffer = env.buffer[1:]
-                    frame = env.render(mode='rgb_array')
-                    frame = env.draw_buffer(frame, np.array(marker_path))
-                    imgs.append(frame)
+    # print out the maximum target coverage
+    print('Score: ', max(rewards))
 
-                    # update progress bar
-                    step_idx += 1
-                    pbar.update(1)
-                    pbar.set_postfix(reward=reward)
-                    if step_idx > max_steps:
-                        done = True
-                    if done:
-                        break
-                
-                # Plot the path
-                img = env.render(mode='rgb_array')
-                img = env.draw_buffer(img, np.array(marker_path))
-                imgs.append(img)
-                print(f"Len of marker path: {len(marker_path)}")
-
-        # print out the maximum target coverage
-        print('Score: ', max(rewards))
-
-        # visualize
-        from IPython.display import Video
-        video_path = f'visualization/corridor/test/{seed}.mp4'
-        vwrite(video_path, imgs)
-        print('Done saving to ', video_path)
+    # visualize
+    from IPython.display import Video
+    video_path = f'visualization/corridor/dp_48-2-8/{seed}.mp4'
+    vwrite(video_path, imgs)
+    print('Done saving to ', video_path)
 
     # Save the 2nd frame as an image
     # img_path = 'visualization/image/vis_tedi.png'
