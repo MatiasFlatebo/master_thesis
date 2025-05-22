@@ -315,7 +315,7 @@ if __name__ == "__main__":
     
     # 1. Load policy
     #checkpoint = "data/outputs/2025.05.20/17.19.36_train_diffusion_unet_ddim_pusht_memory_lowdim_pusht_memory_fixed_lowdim/checkpoints/epoch=0950-test_mean_score=0.965.ckpt"
-    checkpoint = "data/outputs/2025.05.20/20.18.45_train_tedi_ddim_unet_lowdim_pusht_memory_fixed_lowdim/checkpoints/epoch=1000-test_mean_score=0.966.ckpt"
+    checkpoint = "data/outputs/2025.05.21/13.27.46_train_tedi_ddim_unet_lowdim_pusht_memory_fixed_lowdim/checkpoints/epoch=0650-test_mean_score=0.973.ckpt"
     
     vis_policy = TEDiVisualizeBufferPolicy(checkpoint)
     #vis_policy = DiffusionVisualizeBufferPolicy(checkpoint)
@@ -419,7 +419,7 @@ if __name__ == "__main__":
 
         # visualize
         from IPython.display import Video
-        video_path = f"visualization/pusht_memory_fixed_block_baseline/sdp_16-2-4/{seed}.mp4"
+        video_path = f"visualization/pusht_memory_fixed_block/sdp_16-2-4/{seed}.mp4"
         vwrite(video_path, imgs)
         print('Done saving to ', video_path)
 

@@ -4,7 +4,7 @@ Datasets:
 - corridor_baseline
 - corridor_20
 - pusht_memory_fixed_block_baseline
-- pusht_memory_fixed_block_20
+- pusht_memory_fixed_block_5
 - pusht_memory_baseline
 - pusht_memory_20
 
@@ -65,8 +65,11 @@ Ut ifra 10 rollouts:
 - 4 går mot riktig men kommer aldri helt i mål over 0.9
 
 
+Run 250 dataset pusht_memory_fixed_block_5. dp unet ddim. horizon= 16. n_obs_steps=2. action=4. Score:0.67
 
+Run 251 dataset pusht_memory_fixed_block_5. sdp unet ddim. horizon= 16. n_obs_steps=2. action=4. Score:0.97
 
+Run 252 dataset pusht_memory_fixed_block_5. sdp unet ddim. horizon= 8. n_obs_steps=2. action=4. Score:0.92
 
 Spørsmål:
 - Tanker om hvorfor den begynner å hoppe ut av korridoren?
