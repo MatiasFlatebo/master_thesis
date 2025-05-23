@@ -326,103 +326,101 @@ if __name__ == "__main__":
 
     # limit enviornment interaction to 200 steps before termination
     max_steps = 300
-    
+    env = PushTKeypointsEnvVisualizeBuffer(render_size=768)
+    env.set_buffer_color("robin_egg_blue")
+    env.set_path_color("slate_blue")  # Default color for the path
     # use a seed >200 to avoid initial states seen in the training dataset
 
-    seeds = [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010]
-    for seed in seeds:
-        env = PushTKeypointsEnvVisualizeBuffer(render_size=768)
-        env.set_buffer_color("robin_egg_blue")
-        env.set_path_color("slate_blue")  # Default color for the path
-        env.seed(seed)
+    seed = 100005
+    env.seed(seed)
 
-        # get first observation
-        obs = env.reset()
+    # get first observation
+    obs = env.reset()
 
-        # Create the legend (you might need to adjust these based on the expected range)
-        #legend_image = env.create_legend(0, 99)  # Update min and max values based on your application
+    # Create the legend (you might need to adjust these based on the expected range)
+    #legend_image = env.create_legend(0, 99)  # Update min and max values based on your application
 
-        #legend_image = cv2.imread('legend.png', cv2.IMREAD_COLOR)
+    #legend_image = cv2.imread('legend.png', cv2.IMREAD_COLOR)
 
-        # keep a queue of last 2 steps of observations
-        obs_deque = collections.deque(
-                [obs] * obs_horizon, maxlen=obs_horizon)
-        # save visualization and rewards
-        imgs = []
-        rewards = list()
-        done = False
-        step_idx = 0
+    # keep a queue of last 2 steps of observations
+    obs_deque = collections.deque(
+            [obs] * obs_horizon, maxlen=obs_horizon)
+    # save visualization and rewards
+    imgs = []
+    rewards = list()
+    done = False
+    step_idx = 0
 
-        with tqdm(total=max_steps, desc="Eval PushTStateEnv") as pbar:
-            while not done:
-                marker_path = [env.agent.position]
-                B = 1
-                # stack the last obs_horizon (2) number of observations
-                obs_dict = {
-                    "obs": torch.from_numpy(np.stack(obs_deque, axis=0)).to(device, dtype=torch.float32).unsqueeze(0),
-                }
-                action, img_frames = vis_policy.predict_action(obs_dict, env)
-                imgs.extend(img_frames)
-                buffer = action['action_pred'].detach().to('cpu').numpy()[0]
-                env.set_buffer(buffer)
-                if type(vis_policy) == TEDiUnetLowdimPolicy:
-                    modified_diff_steps = vis_policy.buffer_diff_steps[0] -  vis_policy.buffer_diff_steps[0, 0]
-                    env.set_buffer_diff_steps(modified_diff_steps, diff_steps_max=vis_policy.num_inference_steps-1)
-                else:
-                    env.set_buffer_diff_steps(torch.ones(buffer.shape[0])*(-1)) # (Ta,)
+    with tqdm(total=max_steps, desc="Eval PushTStateEnv") as pbar:
+        while not done:
+            marker_path = [env.agent.position]
+            B = 1
+            # stack the last obs_horizon (2) number of observations
+            obs_dict = {
+                "obs": torch.from_numpy(np.stack(obs_deque, axis=0)).to(device, dtype=torch.float32).unsqueeze(0),
+            }
+            action, img_frames = vis_policy.predict_action(obs_dict, env)
+            imgs.extend(img_frames)
+            buffer = action['action_pred'].detach().to('cpu').numpy()[0]
+            env.set_buffer(buffer)
+            if type(vis_policy) == TEDiUnetLowdimPolicy:
+                modified_diff_steps = vis_policy.buffer_diff_steps[0] -  vis_policy.buffer_diff_steps[0, 0]
+                env.set_buffer_diff_steps(modified_diff_steps, diff_steps_max=vis_policy.num_inference_steps-1)
+            else:
+                env.set_buffer_diff_steps(torch.ones(buffer.shape[0])*(-1)) # (Ta,)
 
-                action = action['action'].detach().to('cpu').numpy()[0]
-                #Sleep a tiny bit so that we can see the prediciton
-                #time.sleep(0.1)
+            action = action['action'].detach().to('cpu').numpy()[0]
+            #Sleep a tiny bit so that we can see the prediciton
+            #time.sleep(0.1)
 
-                # Before moving, plot the current plan
-                # Remove first (obs) action from buffer
+            # Before moving, plot the current plan
+            # Remove first (obs) action from buffer
+            env.buffer = env.buffer[1:]
+            imgs.append(env.render(mode='rgb_array'))
+
+            
+
+            # execute action_horizon number of steps
+            # without replanning
+            for i in range(len(action)):
+                # stepping env
+                obs, reward, done, info = env.step(action[i])
+                # save observations
+                obs_deque.append(obs)
+                # and reward/vis
+                rewards.append(reward)
+                
+                ## Render
+                # Remove the leftmost action from the env buffer
+                marker_path.append(env.agent.position)
                 env.buffer = env.buffer[1:]
-                imgs.append(env.render(mode='rgb_array'))
+                frame = env.render(mode='rgb_array')
+                frame = env.plot_path(frame, marker_path)
+                imgs.append(frame)
 
-                
+                # update progress bar
+                step_idx += 1
+                pbar.update(1)
+                pbar.set_postfix(reward=reward)
+                if step_idx > max_steps:
+                    done = True
+                if done:
+                    break
+            
+            # Plot the path
+            img = env.render(mode='rgb_array')
+            img = env.plot_path(img, marker_path)
+            imgs.append(img)
+            #print(f"Len of marker path: {len(marker_path)}")
 
-                # execute action_horizon number of steps
-                # without replanning
-                for i in range(len(action)):
-                    # stepping env
-                    obs, reward, done, info = env.step(action[i])
-                    # save observations
-                    obs_deque.append(obs)
-                    # and reward/vis
-                    rewards.append(reward)
-                    
-                    ## Render
-                    # Remove the leftmost action from the env buffer
-                    marker_path.append(env.agent.position)
-                    env.buffer = env.buffer[1:]
-                    frame = env.render(mode='rgb_array')
-                    frame = env.plot_path(frame, marker_path)
-                    imgs.append(frame)
+    # print out the maximum target coverage
+    print('Score: ', max(rewards))
 
-                    # update progress bar
-                    step_idx += 1
-                    pbar.update(1)
-                    pbar.set_postfix(reward=reward)
-                    if step_idx > max_steps:
-                        done = True
-                    if done:
-                        break
-                
-                # Plot the path
-                img = env.render(mode='rgb_array')
-                img = env.plot_path(img, marker_path)
-                imgs.append(img)
-                #print(f"Len of marker path: {len(marker_path)}")
-
-        # print out the maximum target coverage
-        print('Score: ', max(rewards))
-
-        # visualize
-        from IPython.display import Video
-        video_path = f"visualization/pusht_memory_fixed_block/sdp_16-2-4/{seed}.mp4"
-        vwrite(video_path, imgs)
-        print('Done saving to ', video_path)
+    # visualize
+    from IPython.display import Video
+    video_path = f"visualization/pusht_memory_fixed_block/sdp_16-2-4/{seed}.mp4"
+    vwrite(video_path, imgs)
+    print('Done saving to ', video_path)
 
     # Save the 2nd frame as an image
     # img_path = 'vis_buffer_tedi.png'

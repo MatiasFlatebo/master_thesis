@@ -1,7 +1,7 @@
 import numpy as np
 import click
 from diffusion_policy.common.replay_buffer import ReplayBuffer
-from diffusion_policy.env.pusht_memory.pusht_memory_fixed_keypoints_env import PushTMemoryFixedKeypointsEnv
+from diffusion_policy.env.pusht_memory.pusht_memory_keypoints_env import PushTMemoryKeypointsEnv
 import pygame
 
 @click.command()
@@ -27,8 +27,8 @@ def main(output, render_size, control_hz):
     replay_buffer = ReplayBuffer.create_from_path(output, mode='a')
 
     # create PushT env with keypoints
-    kp_kwargs = PushTMemoryFixedKeypointsEnv.genenerate_keypoint_manager_params()
-    env = PushTMemoryFixedKeypointsEnv(render_size=render_size, render_action=False, **kp_kwargs)
+    kp_kwargs = PushTMemoryKeypointsEnv.genenerate_keypoint_manager_params()
+    env = PushTMemoryKeypointsEnv(render_size=render_size, render_action=False, **kp_kwargs)
     agent = env.teleop_agent()
     clock = pygame.time.Clock()
     
