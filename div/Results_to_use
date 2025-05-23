@@ -58,5 +58,11 @@ Run 250 dataset pusht_memory_fixed_block_5. sdp unet ddim. horizon= 32. n_obs_st
 
 Run 251 dataset pusht_memory_fixed_block_5. sdp unet ddim. horizon= 40. n_obs_steps=2. action=4. Score:0.88
 
-Run 252 dataset pusht_memory_fixed_block_5. sdp unet ddim. horizon= 48. n_obs_steps=2. action=4. Score:0.
+Run 252 dataset pusht_memory_fixed_block_5. sdp unet ddim. horizon= 48. n_obs_steps=2. action=4. Score:0.90
+
+
+Run 253 dataset pusht_memory_baseline. dp unet ddim. horizon= 16. n_obs_steps=2. action=4. Score:0.80
+
+Run 253 dataset pusht_memory_baseline. sdp unet ddim. horizon= 16. n_obs_steps=2. action=4. Score:0.88
+
 

@@ -1,6 +1,6 @@
 defaults:
   - _self_
-  - task: pusht_memory_fixed_lowdim # Endre her for fixed eller flexible!!!
+  - task: pusht_memory_lowdim # Endre her for fixed eller flexible!!!
 
 name: train_tedi_ddim_unet_lowdim
 _target_: diffusion_policy.workspace.train_tedi_lowdim_workspace.TrainTEDiUnetLowdimWorkspace
@@ -11,7 +11,7 @@ action_dim: ${task.action_dim}
 task_name: ${task.name}
 exp_name: "default"
 
-horizon: 48
+horizon: 16
 n_obs_steps: 2
 n_action_steps: 4
 n_latency_steps: 0
